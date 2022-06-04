@@ -11,7 +11,7 @@ ADD ./ $CAVOKE_GAME_ROOT
 WORKDIR $CAVOKE_GAME_ROOT
 # Install server
 RUN mkdir -p build && \
-    cmake . -B build -DUSE_EXTERNAL_DROGON=ON -DUSE_EXTERNAL_NLOHMANN=ON -DUSE_EXTERNAL_JWT=ON && \
+    cmake . -B build && \
     make -C build install
 WORKDIR /
 RUN rm -rf $CAVOKE_GAME_ROOT
