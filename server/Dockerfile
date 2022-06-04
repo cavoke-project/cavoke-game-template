@@ -8,6 +8,7 @@ EXPOSE $SERVER_PORT
 # Cavoke server
 ENV CAVOKE_GAME_ROOT="$IROOT/cavoke_game/"
 ADD ./ $CAVOKE_GAME_ROOT
+WORKDIR $CAVOKE_GAME_ROOT
 # Install server
 RUN mkdir -p build && \
     cmake . -B build -DUSE_EXTERNAL_DROGON=ON -DUSE_EXTERNAL_NLOHMANN=ON -DUSE_EXTERNAL_JWT=ON && \
