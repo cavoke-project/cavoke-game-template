@@ -3,8 +3,8 @@ project(cavoke_game)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(BUILD_ALL OFF)
-set(BUILD_GAMES ON)
+set(BUILD_ALL OFF CACHE BOOL "" FORCE)
+set(BUILD_GAMES ON CACHE BOOL "cavoke games" FORCE)
 add_subdirectory(cavoke)
 
 set(CAVOKE_H_DIR cavoke/cavoke-dev-lib CACHE PATH "Directory with cavoke.h library" FORCE)
