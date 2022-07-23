@@ -1,0 +1,149 @@
+openapi: 3.0.0
+info:
+  version: "0.1.0"
+  title: "Cavoke Server Component API"
+  description: "API for cavoke interaction between main server and server components"
+servers:
+  - url: "localhost:8080"
+paths:
+  /validate:
+    post:
+      summary: "Validates session's settings (checks whether it's ok to start, e.g. enough players)"
+      operationId: validate
+      requestBody:
+        description: Current game configuration
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InitSettings"
+      responses:
+        "200":
+          description: "Validation result"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+        "400":
+          description: "Bad request"
+  /init_state:
+    post:
+      summary: "Initialise state for a new session"
+      operationId: init_state
+      requestBody:
+        description: Current game configuration
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InitSettings"
+      responses:
+        "200":
+          description: Successful initialization
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "400":
+          description: "Bad request"
+  /apply_move:
+    post:
+      summary: "Apply player's move to session"
+      operationId: apply_move
+      requestBody:
+        description: Current game configuration
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameMove"
+      responses:
+        "200":
+          description: Successful updated state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "400":
+          description: "Bad request"
+components:
+  schemas:
+    InitSettings:
+      type: object
+      description: Game session's configuration
+      properties:
+        settings:
+          type: string
+          format: json
+          description: Game's settings (e.g. number of spies in a session, blitz/rapid in chess, etc.)
+          example: '{"board_size": 3}'
+        occupied_positions:
+          type: array
+          items:
+            type: integer
+          description: "Player ids that are taken"
+          example: [0, 1]
+      required:
+        - settings
+        - occupied_positions
+    ValidationResult:
+      type: object
+      description: "Result of the /validate request"
+      properties:
+        success:
+          type: boolean
+          description: "Whether a game with given InitSettings is allowed to be started"
+          example: false
+        message:
+          type: string
+          description: "If validation unsuccessful, a clarification for players. Else, should be empty."
+          example: "Not enough players"
+      required:
+        - success
+        - message
+    GameState:
+      type: object
+      description: "Global game state, containing all information about the game"
+      properties:
+        is_terminal:
+          type: boolean
+          description: "Whether the game session is over. Once over, the session cannot be restarted."
+          example: false
+        global_state:
+          $ref: "#/components/schemas/GlobalState"
+        players_state:
+          type: array
+          description: "States for every player. For instance in poker this should only include the cards visible to the player. This state is returned to the user upon a request."
+          items:
+            type: string
+          example: ["O OXXOXOX", "O OXXOXOX"]
+        winners:
+          type: array
+          items:
+            type: integer
+          example: []
+          description: "Player ids of winning players when the game is over. Should be empty if is_terminal=false"
+      required:
+        - is_terminal
+        - global_state
+        - players_state
+        - winners
+    GameMove:
+      type: object
+      description: "Object containing information about player's move."
+      properties:
+        player_id:
+          type: integer
+          example: 0
+          description: "Player id of a player, who sent this move. Determined on the main server."
+        move:
+          type: string
+          example: "X 1"
+          description: "Player's move in any format the developer desires. This comes straight from the client and may be forged (therefore it must be checked for validity)."
+        global_state:
+          $ref: "#/components/schemas/GlobalState"
+      required:
+        - player_id
+        - move
+        - global_state
+    GlobalState:
+      type: string
+      description: "Global state of the game, containing all information. For instance in poker this should include the values of all players' cards. This state should be used when processing a player's move."
+      example: "O OXXOXOX"
